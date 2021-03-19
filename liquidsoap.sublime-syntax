@@ -1,0 +1,80 @@
+%YAML 1.2
+---
+name: Liquidsoap
+file_extensions: [liq]
+scope: source.liq
+variables:
+  dec_digit: '[0-9_]'
+  dec_integer: (?:[0-9]{{dec_digit}}*)
+  identifier: '[a-z][a-zA-Z0-9''_]*'
+contexts:
+  main:
+    # - match: \b(def|end)\b
+    #   scope: keyword.control
+    - match: \b(if|else|begin|end)\b
+      scope: keyword.control.conditional
+    - match: '"'
+      scope: punctuation.definition.string.begin.liquidsoap
+      push: string
+    - match: \#+
+      scope: punctuation.definition.comment.liquidsoap
+      push:
+        - meta_scope: comment.line.number-sign.liquidsoap
+        - match: \n
+          pop: true
+    - match: \b\d+\b
+      scope: constant.numeric.value.liquidsoap
+    - match: \b(true|false)\b
+      scope: constant.language.boolean.liquidsoap
+    - match: '\b(def)\s+({{identifier}})\b'
+      captures:
+        1: keyword.other.function-definition.liquidsoap
+        2: entity.name.function.liquidsoap
+    - match: \b(let|and)\s+({{identifier}})\s*(=)\s*
+      captures:
+        1: keyword.other.liquidsoap
+        2: variable.other.constant.liquidsoap
+        3: keyword.operator.assignment.liquidsoap
+    - match: ([a-zA-Z0-9_'']*)(\()
+      captures:
+        1: variable.function
+        2: punctuation.section.parens.begin
+    - match: '\b({{identifier}})\s?([:]?)(=)\s'
+      captures:
+        1: variable.other
+        2: keyword.operator.assignment.liquidsoap
+        3: keyword.operator.assignment.liquidsoap
+    - include: lists
+  lists:
+    - match: '\['
+      captures:
+        1: punctuation.definition.list.begin.liquidsoap
+      push:
+        - meta_scope: meta.list.liquidsoap
+        - match: '\]'
+          captures:
+            1: punctuation.definition.list.end.liquidsoap
+          pop: true
+        - include: lists
+        - include: main
+
+  interpolated-liquidsoap-expressions:
+    - match: '\}'
+      scope: punctuation.section.interpolation.end.liquidsoap
+      pop: true
+  interpolated-liquidsoap:
+    - match: '#\{'
+      scope: punctuation.section.interpolation.begin.liquidsoap
+      push:
+        - clear_scopes: 1 # remove `string`/`constant`
+        - meta_scope: meta.interpolation.liquidsoap
+        - meta_content_scope: source.liquidsoap.embedded.liquidsoap
+        - include: main
+        - include: interpolated-liquidsoap-expressions
+  string:
+    - meta_scope: meta.string.liquidsoap string.quoted.single.liquidsoap
+    - match: '"'
+      scope: punctuation.definition.string.end.liquidsoap
+      pop: true
+    - include: interpolated-liquidsoap
+

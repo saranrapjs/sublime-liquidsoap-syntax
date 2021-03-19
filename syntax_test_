@@ -1,0 +1,16 @@
+// SYNTAX TEST "Packages/sublime-liquidsoap-syntax/liquidsoap.sublime-syntax"
+def mine ()
+//   ^ entity.name.function.liquidsoap
+    answer = http.get("http://#{track_host}/queue")
+//                    ^ punctuation.definition.string.begin
+//                            ^ meta.interpolation.liquidsoap punctuation.section.interpolation.begin.liquidsoap
+//                                ^ meta.interpolation.liquidsoap source.liquidsoap.embedded.liquidsoap
+//                                               ^ source.liq punctuation.definition.string.end.liquidsoap
+    let ((protocol, code, desc), headers, data) = answer
+    if code == 200 then
+      print("queuing #{data}")
+      [request.create(data)]
+    else
+      []
+    end
+end
